@@ -1,13 +1,14 @@
 import random
 
 
-class Dot:# точка на игровом поле с координатами х и у
+class Dot:  # точка на игровом поле с координатами х и у
     def __init__(self, x, y):
         self.x = x
         self.y = y
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
+
 
 # Класс Ship имеет конструктор c параметрами корабля (длину, точку носа и направление) и количеством жизней корабля (количество точек, которые еще не подбиты).
 # метод dots(self)`: Это метод, возвращающий список клеток, занимаемых кораблем.
@@ -31,6 +32,7 @@ class Ship:
                 dot = Dot(self.bow_of_the_ship.x + i, self.bow_of_the_ship.y)
             ship_dots.append(dot)
         return ship_dots
+
 
 # Класс "Board" представляет игровое поле. У него есть методы  place_ship для размещения корабля на поле,
 # out для проверки, выходит ли точка за пределы поля, и shot для выстрела.
@@ -57,6 +59,7 @@ class Ship:
 Он вызывает метод `add_ship` для добавления кораблей заданного размера и расположения на доску
 '''
 
+
 class Board:
     def __init__(self):
         self.size = 6
@@ -69,14 +72,13 @@ class Board:
         for dot in ship.dots():
             if self.out(dot) or self.board[dot.x][dot.y] != 'О':
                 raise Exception("Невозможно поставить корабль на эту позицию")
-            if self.board[dot.x][dot.y] != 'O':  # проверка на занятость точки другим кораблем или его контуром
+            if self.board[dot.x][dot.y] == '■':  # проверка на занятость точки другим кораблем или его контуром
                 raise ValueError("Точка корабля занята другим кораблём или его контуром")
 
             self.board[dot.x][dot.y] = '■'
             self.ships.append(ship)
             self.num_of_alive_ships += 1
             self.contour(ship)
-
 
     def contour(self, ship):
         for dot in ship.dots():
@@ -87,8 +89,7 @@ class Board:
                             self.board[i][j] = 'О'
 
     def out(self, dot):
-        if dot.x < 0 or dot.x >= 6 or dot.y < 0 or dot.y >= 6:
-            raise ValueError("Точка корабля вне диапазона игрового поля")
+        return dot.x < 0 or dot.x >= 6 or dot.y < 0 or dot.y >= 6
 
     def print_board(self):
         print('   1 2 3 4 5 6')
@@ -114,6 +115,7 @@ class Board:
         self.add_ship(Ship(1, Dot(1, 3), 'горизонтальное'))
         self.add_ship(Ship(1, Dot(5, 5), 'горизонтальное'))
         self.add_ship(Ship(1, Dot(5, 0), 'горизонтальное'))
+        return
 
 
 # Класс "Player" - класс для игроков.
@@ -137,12 +139,14 @@ class Player:
                 print(e)
                 continue
 
+
 class AI(Player):
     def ask(self):
         # генерируем случайные координаты для выстрела
-        x = random.randint(0, self.enemy_board.size-1)
-        y = random.randint(0, self.enemy_board.size-1)
+        x = random.randint(0, self.enemy_board.size - 1)
+        y = random.randint(0, self.enemy_board.size - 1)
         return Dot(x, y)
+
 
 class User(Player):
     def ask(self):
@@ -151,15 +155,16 @@ class User(Player):
         y = int(input("Введите координаты y: "))
         return Dot(x, y)
 
+
 # Класс "Game" управляет игрой. Он имеет метод random_board для случайного размещения кораблей на поле,
 # метод greet для приветствия игрока, метод loop для основного игрового цикла, и метод start, который запускает игру.
 
 class Game:
     def __init__(self):
-        self.user = User()
-        self.user_board = Board()
-        self.ai = AI()
-        self.ai_board = Board()
+        user_board = Board()
+        ai_board = Board()
+        self.user_board = User(user_board, ai_board)
+        self.ai_board = AI(ai_board, user_board)
 
     def random_board(self):
         # генерация случайной доски пользователя
@@ -204,6 +209,7 @@ class Game:
         self.greet()
         self.random_board()
         self.loop()
+
 
 # Пример использования:
 
