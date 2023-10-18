@@ -122,10 +122,10 @@ class Board:
 
 class Player:
     def __init__(self, player_board, enemy_board):
-        player_board = Board()
-        enemy_board = Board()
         self.player_board = player_board
         self.enemy_board = enemy_board
+        player_board = Board()
+        enemy_board = Board()
 
     def ask(self):
         pass
@@ -166,9 +166,12 @@ class Game:
         ai_board = Board()
         self.user_board = User(user_board, ai_board)
         self.ai_board = AI(ai_board, user_board)
+        self.random_board()
 
     def random_board(self):
         # генерация доски пользователя
+        self.user_board = self.generate_board()
+        self.user_board.print_board()
         while True:
             try:
                 self.user_board.__init__()
@@ -180,14 +183,11 @@ class Game:
         # генерация случайной доски компьютера
 
     def generate_board(self):
-
         while True:  # Организуем цикл для автоматического перезапуска, если корабли не помещаются
             board = Board()  # Создаем новую доску
             ships = []
-
         # Создаем корабли заданных размеров
             ship_lengths = [3, 2, 2, 1, 1, 1, 1]
-
             try:
             # Добавляем корабли на доску
                 for length in ship_lengths:
@@ -198,11 +198,11 @@ class Game:
                         direction = random.choice(['вертикальное', 'горизонтальное'])
 
                         bow_of_the_ship = Dot()
-                        bow_of_the_ship.init(x, y)
+                        bow_of_the_ship.__init__(x, y)
 
                     # Создаем корабль с заданной длиной, начальной точкой и направлением
-                        ship = Ship()
-                        ship.init(length, bow_of_the_ship, direction)
+                        ship = Ship(self)
+                        ship.__init__(length, bow_of_the_ship, direction)
 
                     # Проверяем, возможно ли добавить корабль на доску
                         board.add_ship(ship)
@@ -241,7 +241,7 @@ class Game:
         self.greet()
         self.random_board()
         self.generate_board()
-        self.random_ships_board()
+
         self.loop()
 
 board = Board()
