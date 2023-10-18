@@ -63,7 +63,7 @@ class Ship:
 class Board:
     def __init__(self):
         self.size = 6
-        self.board = [['О' for _ in range(6)] for _ in range(6)]
+        self.board = [['О' for _ in range(self.size)] for _ in range(self.size)]
         self.ships = []
         self.hide_ships = True
         self.num_of_alive_ships = 0
@@ -115,15 +115,16 @@ class Board:
         self.add_ship(Ship(1, Dot(1, 3), 'горизонтальное'))
         self.add_ship(Ship(1, Dot(5, 5), 'горизонтальное'))
         self.add_ship(Ship(1, Dot(5, 0), 'горизонтальное'))
-        return
 
 
 # Класс "Player" - класс для игроков.
 # У него есть методы move, который выполняет ход игрока, и ask, который запрашивает у пользователя координаты выстрела.
 
 class Player:
-    def __init__(self, board, enemy_board):
-        self.board = board
+    def __init__(self, player_board, enemy_board):
+        player_board = Board()
+        enemy_board = Board()
+        self.player_board = player_board
         self.enemy_board = enemy_board
 
     def ask(self):
@@ -167,7 +168,7 @@ class Game:
         self.ai_board = AI(ai_board, user_board)
 
     def random_board(self):
-        # генерация случайной доски пользователя
+        # генерация доски пользователя
         while True:
             try:
                 self.user_board.__init__()
@@ -177,12 +178,40 @@ class Game:
                 continue
 
         # генерация случайной доски компьютера
-        while True:
+
+    def generate_board(self):
+
+        while True:  # Организуем цикл для автоматического перезапуска, если корабли не помещаются
+            board = Board()  # Создаем новую доску
+            ships = []
+
+        # Создаем корабли заданных размеров
+            ship_lengths = [3, 2, 2, 1, 1, 1, 1]
+
             try:
-                self.ai_board.__init__()
-                self.ai_board.place_ships()
-                break
-            except Exception:
+            # Добавляем корабли на доску
+                for length in ship_lengths:
+                    while True:
+                    # Генерируем случайные координаты для первой точки корабля
+                        x = random.randint(0, board.size - 1)
+                        y = random.randint(0, board.size - 1)
+                        direction = random.choice(['вертикальное', 'горизонтальное'])
+
+                        bow_of_the_ship = Dot()
+                        bow_of_the_ship.init(x, y)
+
+                    # Создаем корабль с заданной длиной, начальной точкой и направлением
+                        ship = Ship()
+                        ship.init(length, bow_of_the_ship, direction)
+
+                    # Проверяем, возможно ли добавить корабль на доску
+                        board.add_ship(ship)
+                    # Если удалось успешно добавить корабль, выходим из цикла
+                        break
+
+            # Если успешно создали и разместили все корабли, возвращаем доску
+                return board
+            except:
                 continue
 
     def greet(self):
@@ -205,14 +234,15 @@ class Game:
                 print("Победа компьютера!")
                 break
 
+
+
+
     def start(self):
         self.greet()
         self.random_board()
+        self.generate_board()
+        self.random_ships_board()
         self.loop()
-
-
-# Пример использования:
-
 
 board = Board()
 board.place_ships()
