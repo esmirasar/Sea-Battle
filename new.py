@@ -74,11 +74,17 @@ class Board:
                 raise Exception("Невозможно поставить корабль на эту позицию")
             if self.board[dot.x][dot.y] == '■':  # проверка на занятость точки другим кораблем или его контуром
                 raise ValueError("Точка корабля занята другим кораблём или его контуром")
+            for i in range(dot.x - 1, dot.x + 2):
+                for j in range(dot.y - 1, dot.y + 2):
+                    if not self.out(Dot(i, j)) and self.board[i][j] == '■':
+                        raise ValueError("Точка корабля находится рядом с другими кораблями или их контурами")
 
             self.board[dot.x][dot.y] = '■'
-            self.ships.append(ship)
-            self.num_of_alive_ships += 1
-            self.contour(ship)
+        self.ships.append(ship)
+        self.num_of_alive_ships += 1
+        self.contour(ship)
+
+
 
     def contour(self, ship):
         for dot in ship.dots():
@@ -89,7 +95,9 @@ class Board:
                             self.board[i][j] = 'О'
 
     def out(self, dot):
-        return dot.x < 0 or dot.x >= 6 or dot.y < 0 or dot.y >= 6
+        if dot.x < 0 or dot.x >= len(self.board) or dot.y < 0 or dot.y >= len(self.board[0]):
+            return True
+        return False
 
     def print_board(self):
         print('   1 2 3 4 5 6')
@@ -162,20 +170,20 @@ class User(Player):
 
 class Game:
     def __init__(self):
-        user_board = Board()
-        ai_board = Board()
-        self.user_board = User(user_board, ai_board)
-        self.ai_board = AI(ai_board, user_board)
+        player_user = self.generate_board()
+        player_ai = self.generate_board()
+        self.player_user = User(player_user, player_ai)
+        self.player_ai = AI(player_ai, player_user)
         self.random_board()
 
     def random_board(self):
         # генерация доски пользователя
-        self.user_board = self.generate_board()
-        self.user_board.print_board()
+        self.player_user = self.generate_board()
+        self.player_user.print_board()
         while True:
             try:
-                self.user_board.__init__()
-                self.user_board.place_ships()
+                self.player_user.__init__()
+                self.player_user.place_ships()
                 break
             except Exception:
                 continue
@@ -197,12 +205,10 @@ class Game:
                         y = random.randint(0, board.size - 1)
                         direction = random.choice(['вертикальное', 'горизонтальное'])
 
-                        bow_of_the_ship = Dot()
-                        bow_of_the_ship.__init__(x, y)
+                        bow_of_the_ship = Dot(x, y)
 
                     # Создаем корабль с заданной длиной, начальной точкой и направлением
-                        ship = Ship(self)
-                        ship.__init__(length, bow_of_the_ship, direction)
+                        ship = Ship(length, bow_of_the_ship, direction)
 
                     # Проверяем, возможно ли добавить корабль на доску
                         board.add_ship(ship)
@@ -211,26 +217,26 @@ class Game:
 
             # Если успешно создали и разместили все корабли, возвращаем доску
                 return board
-            except:
+            except Exception as e:
+                print('Что-то пошло не так!')
                 continue
 
     def greet(self):
         print("Добро пожаловать в игру 'Морской бой'!\n")
-        print("Формат ввода координат: x y")
 
     def loop(self):
-        while self.user_board.num_of_alive_ships > 0 and self.ai_board.num_of_alive_ships > 0:
+        while self.player_user.player_board.num_of_alive_ships > 0 and self.player_ai.enemy_board.num_of_alive_ships > 0:
             print("Ход пользователя:")
-            self.user.shoot(self.ai_board)
-            self.ai_board.print_board()
-            if self.ai_board.num_of_alive_ships == 0:
+            self.player_user.move()
+            self.player_ai.player_board.print_board()
+            if self.player_ai.enemy_board.num_of_alive_ships == 0:
                 print("Победа пользователя!")
                 break
 
             print("Ход компьютера:")
-            self.ai.shoot(self.user_board)
-            self.user_board.print_board()
-            if self.user_board.num_of_alive_ships == 0:
+            self.player_ai.move()
+            self.player_user.player_board.print_board()
+            if self.player_user.player_board.num_of_alive_ships == 0:
                 print("Победа компьютера!")
                 break
 
